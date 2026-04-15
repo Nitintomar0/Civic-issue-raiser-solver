@@ -22,26 +22,25 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// In-memory storage (replace with MongoDB in production)
+
 let reports = [];
 let iotSensors = [];
 
-// Socket.IO connection handling
+
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
-  // Send existing reports to new client
+ 
   socket.emit('initialReports', reports);
 
-  // Handle new report submission
+
   socket.on('submitReport', (report) => {
     reports.push(report);
-    // Broadcast to all clients
     io.emit('newReport', report);
     console.log('New report submitted:', report.id);
   });
 
-  // Handle report update
+
   socket.on('updateReport', ({ id, updates }) => {
     const index = reports.findIndex((r) => r.id === id);
     if (index !== -1) {
@@ -51,7 +50,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Handle IoT sensor updates
+
   socket.on('sensorUpdate', (sensor) => {
     const index = iotSensors.findIndex((s) => s.id === sensor.id);
     if (index !== -1) {
@@ -67,19 +66,15 @@ io.on('connection', (socket) => {
   });
 });
 
-// REST API Routes
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Get all reports
 app.get('/api/reports', (req, res) => {
   res.json(reports);
 });
 
-// Get report by ID
 app.get('/api/reports/:id', (req, res) => {
   const report = reports.find((r) => r.id === req.params.id);
   if (report) {
@@ -89,7 +84,7 @@ app.get('/api/reports/:id', (req, res) => {
   }
 });
 
-// Create new report
+
 app.post('/api/reports', (req, res) => {
   const report = req.body;
   reports.push(report);
@@ -97,7 +92,7 @@ app.post('/api/reports', (req, res) => {
   res.status(201).json(report);
 });
 
-// Update report
+
 app.put('/api/reports/:id', (req, res) => {
   const index = reports.findIndex((r) => r.id === req.params.id);
   if (index !== -1) {
@@ -109,7 +104,7 @@ app.put('/api/reports/:id', (req, res) => {
   }
 });
 
-// Delete report
+
 app.delete('/api/reports/:id', (req, res) => {
   const index = reports.findIndex((r) => r.id === req.params.id);
   if (index !== -1) {
@@ -120,12 +115,12 @@ app.delete('/api/reports/:id', (req, res) => {
   }
 });
 
-// Get IoT sensors
+
 app.get('/api/sensors', (req, res) => {
   res.json(iotSensors);
 });
 
-// Weather API proxy (optional)
+
 app.get('/api/weather/:city', async (req, res) => {
   try {
     const apiKey = process.env.VITE_WEATHER_API_KEY;
@@ -137,7 +132,6 @@ app.get('/api/weather/:city', async (req, res) => {
       });
     }
 
-    // In production, fetch from OpenWeatherMap API
     res.json({
       temp: 25 + Math.random() * 10,
       condition: 'Partly Cloudy',
@@ -148,7 +142,7 @@ app.get('/api/weather/:city', async (req, res) => {
   }
 });
 
-// Analytics endpoint
+
 app.get('/api/analytics', (req, res) => {
   const analytics = {
     totalReports: reports.length,
